@@ -73,7 +73,7 @@ exports.create = async (req, res) => {
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [first_name,last_name,cname,email,phone,street_address,city,state,postal_code,country,product,qty,price,total,status,created_by]
     );
-    console.log(`✅ Created order id=${r.insertId}: ${cname} | ${product}`);
+    console.log(`Created order id=${r.insertId}: ${cname} | ${product}`);
     const [[row]] = await db.execute('SELECT * FROM customer_orders WHERE id=?', [r.insertId]);
     res.status(201).json(row);
   } catch (e) { console.error('[create]', e); res.status(500).json({ message: e.message }); }
