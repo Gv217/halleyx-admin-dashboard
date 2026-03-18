@@ -119,7 +119,7 @@ module.exports = {
     };
     orders.push(order);
     saveOrders();
-    console.log(`✅ Created order #${order.id}: ${order.customer_name}`);
+    console.log(`Created order #${order.id}: ${order.customer_name}`);
     return order;
   },
 
