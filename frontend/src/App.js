@@ -19,9 +19,9 @@ export default function App() {
             <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <main className="main-content">
               <Routes>
-                <Route path="/"          element={<DashboardPage       onMenu={() => setSidebarOpen(true)} />} />
-                <Route path="/configure" element={<DashboardConfigPage onMenu={() => setSidebarOpen(true)} />} />
-                <Route path="/orders"    element={<OrdersPage          onMenu={() => setSidebarOpen(true)} />} />
+                <Route path="/"          element={<DashboardPage       onMenuClick={() => setSidebarOpen(true)} />} />
+                <Route path="/configure" element={<DashboardConfigPage onMenuClick={() => setSidebarOpen(true)} />} />
+                <Route path="/orders"    element={<OrdersPage          onMenuClick={() => setSidebarOpen(true)} />} />
               </Routes>
             </main>
           </div>

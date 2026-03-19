@@ -1,17 +1,30 @@
 import { useState, useEffect, useRef } from 'react';
 import { COUNTRIES, PRODUCTS, STATUSES, AGENTS } from '../../utils/constants';
+import { useToast } from '../../utils/toast';
 
 const EMPTY = {
   first_name: '', last_name: '', email: '', phone: '',
-  street_address: '', city: '', state: '', postal_code: '', country: '',
-  product: '', quantity: 1, unit_price: '', status: 'Pending', created_by: '',
+  street_address: '', city: '', state: '', postal_code: '', country: 'United States',
+  product: PRODUCTS[0], quantity: 1, unit_price: '89.99', status: 'Pending', created_by: AGENTS[0],
 };
+
+// ── Field wrapper (defined OUTSIDE the modal so React never remounts inputs) ──
+function F({ k, label, req = true, errs, children }) {
+  return (
+    <div className="field">
+      <label className="flabel">{label}{req && <span className="req"> *</span>}</label>
+      {children}
+      {errs[k] && <div className="ferr">⚠ {errs[k]}</div>}
+    </div>
+  );
+}
 
 export default function OrderModal({ order, onSave, onClose }) {
   const [form,      setForm]      = useState(EMPTY);
   const [errs,      setErrs]      = useState({});
   const [serverErr, setServerErr] = useState('');
   const [busy,      setBusy]      = useState(false);
+  const toast = useToast();
   const bodyRef = useRef(null);
   const isEdit  = !!order;
 
@@ -58,7 +71,8 @@ export default function OrderModal({ order, onSave, onClose }) {
     const e = validate();
     if (Object.keys(e).length) {
       setErrs(e);
-      if (bodyRef.current) bodyRef.current.scrollTop = 0;
+      const firstErr = Object.keys(e)[0];
+      toast(`Please fill required fields: ${firstErr.replace('_',' ')}`, 'err');
       return;
     }
     setBusy(true);
@@ -88,13 +102,7 @@ export default function OrderModal({ order, onSave, onClose }) {
     }
   };
 
-  const F = ({ k, label, req = true, children }) => (
-    <div className="field">
-      <label className="flabel">{label}{req && <span className="req"> *</span>}</label>
-      {children}
-      {errs[k] && <div className="ferr">⚠ {errs[k]}</div>}
-    </div>
-  );
+
 
   return (
     <div className="overlay" onClick={onClose}>
@@ -130,44 +138,44 @@ export default function OrderModal({ order, onSave, onClose }) {
           <div className="form-sec">
             <div className="sec-title">Customer Information</div>
             <div className="g2">
-              <F k="first_name" label="First name">
+              <F k="first_name" label="First name" errs={errs}>
                 <input className={`input${errs.first_name ? ' err' : ''}`} value={form.first_name}
                   onChange={e => upd('first_name', e.target.value)} placeholder="John" autoFocus />
               </F>
-              <F k="last_name" label="Last name">
+              <F k="last_name" label="Last name" errs={errs}>
                 <input className={`input${errs.last_name ? ' err' : ''}`} value={form.last_name}
                   onChange={e => upd('last_name', e.target.value)} placeholder="Doe" />
               </F>
             </div>
             <div className="g2">
-              <F k="email" label="Email id">
+              <F k="email" label="Email id" errs={errs}>
                 <input type="email" className={`input${errs.email ? ' err' : ''}`} value={form.email}
                   onChange={e => upd('email', e.target.value)} placeholder="john@example.com" />
               </F>
-              <F k="phone" label="Phone number">
+              <F k="phone" label="Phone number" errs={errs}>
                 <input className={`input${errs.phone ? ' err' : ''}`} value={form.phone}
                   onChange={e => upd('phone', e.target.value)} placeholder="+1 555 000 0000" />
               </F>
             </div>
-            <F k="street_address" label="Street address">
+            <F k="street_address" label="Street address" errs={errs}>
               <input className={`input${errs.street_address ? ' err' : ''}`} value={form.street_address}
                 onChange={e => upd('street_address', e.target.value)} placeholder="123 Main Street" />
             </F>
             <div className="g3">
-              <F k="city" label="City">
+              <F k="city" label="City" errs={errs}>
                 <input className={`input${errs.city ? ' err' : ''}`} value={form.city}
                   onChange={e => upd('city', e.target.value)} placeholder="City" />
               </F>
-              <F k="state" label="State / Province">
+              <F k="state" label="State / Province" errs={errs}>
                 <input className={`input${errs.state ? ' err' : ''}`} value={form.state}
                   onChange={e => upd('state', e.target.value)} placeholder="State" />
               </F>
-              <F k="postal_code" label="Postal code">
+              <F k="postal_code" label="Postal code" errs={errs}>
                 <input className={`input${errs.postal_code ? ' err' : ''}`} value={form.postal_code}
                   onChange={e => upd('postal_code', e.target.value)} placeholder="000000" />
               </F>
             </div>
-            <F k="country" label="Country">
+            <F k="country" label="Country" errs={errs}>
               <select className={`select${errs.country ? ' err' : ''}`} value={form.country}
                 onChange={e => upd('country', e.target.value)}>
                 <option value="">Select country</option>
@@ -179,7 +187,7 @@ export default function OrderModal({ order, onSave, onClose }) {
           {/* Order Information */}
           <div className="form-sec">
             <div className="sec-title">Order Information</div>
-            <F k="product" label="Choose product">
+            <F k="product" label="Choose product" errs={errs}>
               <select className={`select${errs.product ? ' err' : ''}`} value={form.product}
                 onChange={e => upd('product', e.target.value)}>
                 <option value="">Select product</option>
@@ -201,7 +209,7 @@ export default function OrderModal({ order, onSave, onClose }) {
                 {errs.quantity && <div className="ferr">⚠ {errs.quantity}</div>}
               </div>
               {/* Unit price */}
-              <F k="unit_price" label="Unit price">
+              <F k="unit_price" label="Unit price" errs={errs}>
                 <div className="pfx-wrap">
                   <span className="pfx">$</span>
                   <input type="number" step="0.01" min="0"
@@ -222,12 +230,12 @@ export default function OrderModal({ order, onSave, onClose }) {
               </div>
             </div>
             <div className="g2">
-              <F k="status" label="Status">
+              <F k="status" label="Status" errs={errs}>
                 <select className="select" value={form.status} onChange={e => upd('status', e.target.value)}>
                   {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </F>
-              <F k="created_by" label="Created by">
+              <F k="created_by" label="Created by" errs={errs}>
                 <select className={`select${errs.created_by ? ' err' : ''}`} value={form.created_by}
                   onChange={e => upd('created_by', e.target.value)}>
                   <option value="">Select agent</option>

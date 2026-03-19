@@ -1,8 +1,9 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const app = express();
-const PORT = process.env.PORT || 5000;
+const cors    = require('cors');
+const initDb  = require('./config/init-db');
+const app     = express();
+const PORT    = process.env.PORT || 5000;
 
 app.use(cors({ origin: true, credentials: true }));
 app.options('*', cors());
@@ -19,4 +20,7 @@ app.get('/api/health', (_q, r) => r.json({ status: 'ok', time: new Date() }));
 app.use((_q, r) => r.status(404).json({ message: 'Not found' }));
 app.use((e, _q, r, _n) => { console.error(e); r.status(500).json({ message: e.message }); });
 
-app.listen(PORT, () => console.log(`\n🚀 Backend → http://localhost:${PORT}\n`));
+// Auto-initialize DB then start listening
+initDb()
+  .then(() => app.listen(PORT, () => console.log(`\n🚀 Backend → http://localhost:${PORT}\n`)))
+  .catch(e  => { console.error('💥 Startup failed:', e.message); process.exit(1); });
